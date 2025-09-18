@@ -1,0 +1,181 @@
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Guia: Instalar Docker e Docker Compose no Ubuntu (passo a passo)</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#9aa4b2;
+      --accent:#00aaff;
+      --code-bg:#0b1220;
+      --code-border:#223040;
+      --success:#16a34a;
+    }
+    body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:linear-gradient(180deg,#071027 0%, #071825 100%); color:#e6eef6; margin:0; padding:2rem;}
+    .container{max-width:980px;margin:0 auto;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px;padding:28px;box-shadow:0 8px 30px rgba(2,6,23,0.6);}
+    header{display:flex;gap:16px;align-items:center;}
+    header img{width:68px;height:68px;border-radius:12px;background:linear-gradient(90deg,#062034,#0b2540);padding:8px;}
+    h1{margin:0;font-size:1.6rem;}
+    p.lead{color:var(--muted);margin-top:6px;}
+    nav{margin-top:18px;padding:12px 16px;background:rgba(255,255,255,0.01);border-radius:10px;}
+    nav a{display:inline-block;margin-right:14px;color:var(--accent);text-decoration:none;}
+    section{margin-top:20px;padding:18px;background:rgba(255,255,255,0.01);border-radius:10px;}
+    h2{margin-top:0;}
+    .step{margin-bottom:18px;padding:14px;border-left:4px solid rgba(255,255,255,0.03);background:linear-gradient(180deg, rgba(255,255,255,0.005), transparent);}
+    .cmd{display:block;background:var(--code-bg);border:1px solid var(--code-border);padding:12px;border-radius:8px;margin-top:10px;overflow:auto;font-family:Menlo,Monaco,monospace;font-size:0.95rem;color:#d2f1ff;}
+    .note{color:var(--muted);font-size:0.95rem;margin-top:8px;}
+    footer{margin-top:22px;color:var(--muted);font-size:0.9rem;}
+    .image-row{display:flex;gap:12px;align-items:center;margin-top:10px;}
+    .image-row img{max-height:72px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);}
+    ul.index{padding-left:16px;color:var(--muted);}
+    a.top{float:right;color:var(--muted);text-decoration:none;font-size:0.9rem}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.02);font-size:0.85rem;margin-left:8px;color:var(--muted)}
+    .highlight{background:linear-gradient(90deg, rgba(0,170,255,0.06), transparent);padding:8px;border-radius:6px;border:1px solid rgba(0,170,255,0.06);}
+    @media (max-width:700px){header{flex-direction:column;align-items:flex-start} .image-row{flex-direction:row}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="https://www.docker.com/wp-content/uploads/2022/03/Moby-logo.png" alt="Docker logo">
+      <div>
+        <h1>Guia passo a passo — Instalar <strong>Docker</strong> e <strong>Docker Compose</strong> no Ubuntu</h1>
+        <p class="lead">Instruções testadas para Ubuntu (LTS). Comandos destacados — copie e cole no terminal.</p>
+      </div>
+    </header>
+
+    <nav>
+      <strong>Índice</strong>
+      <span class="badge">Rápido</span>
+      <div style="margin-top:8px">
+        <a href="#pre-requisitos">Pre-requisitos</a>
+        <a href="#instalar-docker">Instalar Docker Engine</a>
+        <a href="#instalar-compose">Instalar Docker Compose (duas opções)</a>
+        <a href="#testar">Testar instalação</a>
+        <a href="#extras">Extras & permissões</a>
+        <a href="#referencias">Referências</a>
+      </div>
+    </nav>
+
+    <section id="pre-requisitos" class="step">
+      <a class="top" href="#top">↑ topo</a>
+      <h2>1. Pré-requisitos</h2>
+      <ul class="index">
+        <li>Ubuntu 20.04 / 22.04 / 24.04 (ou similar)</li>
+        <li>Conta com permissão <code>sudo</code></li>
+        <li>Conexão com internet para baixar pacotes</li>
+      </ul>
+      <p class="note">Abra um terminal (Ctrl+Alt+T) antes de executar os comandos abaixo.</p>
+    </section>
+
+    <section id="instalar-docker" class="step">
+      <a class="top" href="#top">↑ topo</a>
+      <h2>2. Instalar Docker Engine (passo a passo)</h2>
+
+      <div class="highlight">
+        <strong>Remover versões antigas (se houver):</strong>
+        <pre class="cmd">sudo apt remove docker docker-engine docker.io containerd runc -y</pre>
+      </div>
+
+      <div class="highlight">
+        <strong>Atualizar índice de pacotes e instalar dependências:</strong>
+        <pre class="cmd">sudo apt update
+sudo apt install ca-certificates curl gnupg lsb-release -y</pre>
+      </div>
+
+      <div class="highlight">
+        <strong>Adicionar a chave GPG oficial do Docker:</strong>
+        <pre class="cmd">sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg</pre>
+      </div>
+
+      <div class="highlight">
+        <strong>Adicionar o repositório oficial do Docker:</strong>
+        <pre class="cmd">echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null</pre>
+      </div>
+
+      <div class="highlight">
+        <strong>Instalar Docker Engine, CLI e containerd:</strong>
+        <pre class="cmd">sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io -y</pre>
+      </div>
+
+      <p class="note">Se tudo correr bem, o serviço Docker será instalado. Para gerenciar o serviço:</p>
+      <pre class="cmd">sudo systemctl enable --now docker
+sudo systemctl status docker</pre>
+
+      <div class="image-row">
+        <img src="https://www.docker.com/wp-content/uploads/2022/03/Moby-logo.png" alt="Docker">
+        <img src="https://raw.githubusercontent.com/docker/compose/master/docs/images/compose-logo.png" alt="Compose (logo)">
+      </div>
+    </section>
+
+    <section id="instalar-compose" class="step">
+      <a class="top" href="#top">↑ topo</a>
+      <h2>3. Instalar Docker Compose — duas opções</h2>
+
+      <h3>Opção A — <em>Plugin oficial</em> (recomendado nos sistemas recentes)</h3>
+      <p class="note">A partir de versões recentes do Docker, o Docker Compose está disponível como plugin: <code>docker compose</code> (observe o espaço).</p>
+      <pre class="cmd">sudo apt update
+sudo apt install docker-compose-plugin -y</pre>
+      <p class="note">Agora você usa o compose como:</p>
+      <pre class="cmd">docker compose up -d
+docker compose ps</pre>
+
+      <h3>Opção B — binário <code>docker-compose</code> (compatibilidade com scripts antigos)</h3>
+      <p class="note">Instala a versão standalone (v2+) — substitua a URL por uma versão específica se quiser.</p>
+      <pre class="cmd">sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version</pre>
+
+      <p class="note">Se optar pelo binário, você chamará <code>docker-compose</code> (com hífen). Se instalou o plugin, use <code>docker compose</code>.</p>
+    </section>
+
+    <section id="testar" class="step">
+      <a class="top" href="#top">↑ topo</a>
+      <h2>4. Testar a instalação</h2>
+      <p class="note">Execute o famoso container "hello-world" para verificar:</p>
+      <pre class="cmd">sudo docker run --rm hello-world</pre>
+      <p class="note">Se receber uma mensagem de boas-vindas do Docker, a instalação está correta.</p>
+
+      <h3>Executar sem sudo (opcional)</h3>
+      <p class="note">Para evitar digitar <code>sudo</code> em cada comando, adicione seu usuário ao grupo <code>docker</code>:</p>
+      <pre class="cmd">sudo usermod -aG docker $USER
+# Após este comando, faça logout/login ou reinicie a sessão</pre>
+    </section>
+
+    <section id="extras" class="step">
+      <a class="top" href="#top">↑ topo</a>
+      <h2>5. Extras úteis</h2>
+      <ul class="index">
+        <li>Ver versão do Docker: <pre class="cmd">docker --version</pre></li>
+        <li>Ver versão do Compose (plugin): <pre class="cmd">docker compose version</pre></li>
+        <li>Limpar imagens/parados: <pre class="cmd">docker system prune -a</pre></li>
+        <li>Logs de containers: <pre class="cmd">docker logs -f &lt;container&gt;</pre></li>
+      </ul>
+      <p class="note">Se tiver dúvidas sobre permissões ou erros, cole o erro para diagnóstico.</p>
+    </section>
+
+    <section id="referencias" class="step">
+      <a class="top" href="#top">↑ topo</a>
+      <h2>Referências</h2>
+      <ul class="index">
+        <li>Documentação oficial do Docker — <em>installation on Ubuntu</em></li>
+        <li>Repositório oficial do Docker Compose (GitHub)</li>
+      </ul>
+      <p class="note">Comandos e URLs usados nas seções acima apontam para fontes oficiais (Docker / GitHub).</p>
+    </section>
+
+    <footer>
+      Gerado em HTML para download — contém comandos destacados e imagens apontando para recursos públicos. <!-- não incluir links diretos extra -->
+    </footer>
+  </div>
+</body>
+</html>
